@@ -8,9 +8,12 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class BookService(private val seatRepository: SeatRepository) {
     @Transactional
-    fun book(bookRequestDto: BookRequestDto) {
+    fun book(bookRequestDto: BookRequestDto): Int {
         seatRepository.findBySeatNumber(bookRequestDto.seatNumber) ?: throw RuntimeException()
-        val a = seatRepository.updateUserIdBySeatNumber(bookRequestDto.userId, bookRequestDto.seatNumber)
-        println(a)
+
+        return seatRepository.updateUserIdBySeatNumber(
+            userId = bookRequestDto.userId,
+            seatNumber = bookRequestDto.seatNumber
+        )
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 class BookController(private val bookService: BookService) {
 
     @PostMapping
-    fun book(@RequestBody bookRequestDto: BookRequestDto) {
-        bookService.book(bookRequestDto)
+    fun book(@RequestBody bookRequestDto: BookRequestDto): Int {
+        return bookService.book(bookRequestDto)
     }
 }
