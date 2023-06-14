@@ -3,19 +3,19 @@ package com.example.optimisticlock.service
 import com.example.optimisticlock.dto.BookRequestDto
 import com.example.optimisticlock.repository.SeatRepository
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.springframework.boot.test.context.SpringBootTest
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
-import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class BookServiceTest(
-    private val bookService: BookService,
-    private val seatRepository: SeatRepository
-) : BehaviorSpec({
+class BookServiceTest(private val bookService: BookService) : BehaviorSpec({
 
     given("100명이 동시에 요청한 상황에서") {
 
-        var count = 0
+        var updateCount = 0
         val numberOfThreads = 100
         val latch = CountDownLatch(numberOfThreads)
         val executor = Executors.newFixedThreadPool(1)
@@ -26,19 +26,18 @@ class BookServiceTest(
 
                     val mockBookRequestDto = BookRequestDto(userId = i.toLong(), seatNumber = "A-01")
 
-                    bookService.book(mockBookRequestDto)
+                    updateCount += bookService.book(mockBookRequestDto)
                     latch.countDown()
                 }
             }
-            latch.await()
 
-//            val result = withContext(Dispatchers.IO) {
-//                seatRepository.findBySeatNumber()
-//            }
-//
-//            then("100 횟수 저장된다.") {
-//                result?.count shouldBe 100
-//            }
+            withContext(Dispatchers.IO) {
+                latch.await()
+            }
+
+            then("업데이트가 1건만 발생한다.") {
+                updateCount shouldBe 1
+            }
         }
     }
 })
